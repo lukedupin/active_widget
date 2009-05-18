@@ -1,5 +1,6 @@
 require 'erb'
 
+  #This class provides an inline widget function that allows the attachment of code with views
 class WidgetController < ApplicationController
   def self.render( options = nil, extra_options = {}, &block )
     if     options.nil?
@@ -40,7 +41,9 @@ class WidgetController < ApplicationController
 		cont = self.to_s.gsub(/([A-Z])/, '_\1').sub(/_/, '').sub(/_[^_]*$/, '').downcase
 
       #Figure out what file these guys are asking for
-    if options[:action]
+    if options[:partial]
+			filename = File.join(RAILS_ROOT, 'app', 'views', cont, "_#{options[:partial]}.#{ext}.erb")
+    elsif options[:action]
 			filename = File.join(RAILS_ROOT, 'app', 'views', cont, "#{options[:action]}.#{ext}.erb")
     else
       raise 'Can\'t find a valid action to act on'
