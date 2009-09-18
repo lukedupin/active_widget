@@ -2,6 +2,17 @@ require 'erb'
 
   #This class provides an inline widget function that allows the attachment of code with views
 class ActiveWidgetController < ApplicationController
+    #This overloads the respond_to function to protect it from crashing
+    #Whent he user is calling things as a widget
+  def respond_to( &block )
+    if @widget
+      @active_widget = ActiveWidgetFormat.new
+      block.call( @active_widget )
+    else
+      super( block )
+    end
+  end
+
   def self.render( options = nil, extra_options = {}, &block )
     if     options.nil?
       raise "Can't deal with empty options yet, please provide an action name"
@@ -25,13 +36,33 @@ class ActiveWidgetController < ApplicationController
       options = extra_options
     end
 
-			#Get the extension
-		case
-		when options[:xml]
+
+    ### Call my action to generate instance variables
+    obj = self.new
+    obj.instance_variable_set('@widget', true);
+    obj.send(options[:action])
+
+    ### Store all the instance variables the action inside the class generated
+    obj.instance_variables.each do |v| 
+      instance_variable_set(v, obj.instance_variable_get(v))
+    end
+
+      #Update the user options with the respond_to options in the controller
+      #If the user gave a conflicting option, we side with the user
+    @active_widget.update_options!( options ) if @active_widget
+
+      #Create the local variables passed by the user
+    options[:locals].each do |k,v|
+      instance_variable_set( "@#{k}", v )
+    end if options[:locals].is_a? Hash
+
+			#Get the extension we are gonig to render out
+		case (options[:format] || :html).to_sym
+		when :xml
 			ext = 'xml'
-    when options[:js]
+    when :js
 			ext = 'js'
-    when options[:json]
+    when :json
 			ext = 'json'
 		else
 			ext = 'html'
@@ -48,21 +79,6 @@ class ActiveWidgetController < ApplicationController
     else
       raise 'Can\'t find a valid action to act on'
     end
-
-      #Call my action to generate instance variables
-    obj = self.new
-    obj.instance_variable_set('@widget', true);
-    obj.send(options[:action])
-
-      #Store all the instance variables created from my logic class
-    obj.instance_variables.each do |v| 
-      instance_variable_set(v, obj.instance_variable_get(v))
-    end
-
-      #Create the local variables passed by the user
-    options[:locals].each do |k,v|
-      instance_variable_set( "@#{k}", v )
-    end if options[:locals].is_a? Hash
 
       #Now render out the string
     return ERB.new(File.open(filename).read).result(binding)
