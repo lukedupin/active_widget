@@ -1,7 +1,7 @@
 require 'erb'
 
   #This class provides an inline widget function that allows the attachment of code with views
-class WidgetController < ApplicationController
+class ActiveWidgetController < ApplicationController
   def self.render( options = nil, extra_options = {}, &block )
     if     options.nil?
       raise "Can't deal with empty options yet, please provide an action name"
