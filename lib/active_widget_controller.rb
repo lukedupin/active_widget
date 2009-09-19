@@ -28,8 +28,7 @@ class ActiveWidgetController < ApplicationController
    # action and render out all of our data to a string
   def self.render( options = nil, extra_options = {}, &block )
     if     options.nil?
-      raise "Can't deal with empty options yet, please provide an action name"
-      options = { :template => default_template, :layout => true }
+      options = { :action => :index }
     elsif options == :update
       options = extra_options.merge({ :update => true })
     elsif options.is_a? String or options.is_a? Symbol
