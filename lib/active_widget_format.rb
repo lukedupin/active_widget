@@ -8,7 +8,12 @@ class ActiveWidgetFormat
   end
 
     #Provide a widget format to the respond_to block inside controllers
-  def widget( options = {}, extra_options = {} )
+  def widget( &block )
+    block.call if block
+  end
+
+    #This is collects any default options found inside a render call
+  def load_args( options = {}, extra_options = {} )
     @options = options
     @extra_options = extra_options
   end

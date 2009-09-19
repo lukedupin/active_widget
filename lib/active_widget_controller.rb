@@ -6,13 +6,26 @@ class ActiveWidgetController < ApplicationController
     #Whent he user is calling things as a widget
   def respond_to( &block )
     if @widget
-      @active_widget = ActiveWidgetFormat.new
+      @active_widget = ActiveWidgetFormat.new if @active_widget.nil?
       block.call( @active_widget )
     else
-      super( block )
+      super( &block )
     end
   end
 
+  # This method overloads render to catch any default widget options.
+  # If we aren't rendering a widget, the method acts as a pass through
+  def render( options = {}, extra_options = {}, &block )
+    if @widget
+      @active_widget = ActiveWidgetFormat.new if @active_widget.nil?
+      @active_widget.load_args( options, extra_options || Hash.new )
+    else
+      super#( options, extra_options, &block )
+    end
+  end
+  
+  # This method has all the real magic.  Inside this we call our controller's
+   # action and render out all of our data to a string
   def self.render( options = nil, extra_options = {}, &block )
     if     options.nil?
       raise "Can't deal with empty options yet, please provide an action name"
