@@ -92,7 +92,12 @@ class ActiveWidgetController < ApplicationController
       raise 'Can\'t find a valid action to act on'
     end
 
+      #Create some very basic instance vars that rails uses
+    @request = ActionController::Request.new({})
+    @controller = obj
+    @controller.instance_variable_set('@url', ActionController::UrlRewriter.new(@request, {}))
+
       #Now render out the string
-    return ERB.new(File.open(filename).read).result(binding)
+    return ERB.new("<%self.extend ActionView::Helpers%>#{File.open(filename).read}").result(binding)
   end
 end
